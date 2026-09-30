@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 
-API_URL = "http://127.0.0.1:8001"
+API_URL = "https://smart-expense-management-system-with-ai-wqi3.onrender.com"
 
 st.set_page_config(
     page_title="Smart Expense Manager",
