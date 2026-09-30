@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import requests
 import pandas as pd
@@ -13,54 +14,88 @@ st.set_page_config(
 st.title("💰 Smart Expense Management System")
 st.write("Track your expenses and ask questions using the AI Agent.")
 
+# ============================================================
+# ADD EXPENSE
+# ============================================================
 
-# -----------------------------
-# Add Expense
-# -----------------------------
-
-st.header("➕ Add Expense")
+st.header("➕ Add New Expense")
 
 with st.form("expense_form"):
-    description = st.text_input("Description", placeholder="Example: Lunch")
-    amount = st.number_input("Amount (₹)", min_value=0.0, step=1.0)
-    category = st.text_input("Category", placeholder="Example: Food")
+    title = st.text_input(
+        "Expense Title",
+        placeholder="Example: Lunch"
+    )
 
-    submitted = st.form_submit_button("Add Expense")
+    category = st.selectbox(
+        "Category",
+        [
+            "Food",
+            "Transport",
+            "Shopping",
+            "Entertainment",
+            "Bills",
+            "Education",
+            "Health",
+            "Travel",
+            "Other"
+        ]
+    )
+
+    amount = st.number_input(
+        "Amount (₹)",
+        min_value=0.0,
+        step=1.0
+    )
+
+    expense_date = st.date_input(
+        "Expense Date"
+    )
+
+    submitted = st.form_submit_button("➕ Add Expense")
 
     if submitted:
-        if not description or amount <= 0 or not category:
-            st.warning("Please fill in all fields.")
+
+        if not title.strip():
+            st.warning("Please enter an expense title.")
+
+        elif amount <= 0:
+            st.warning("Please enter an amount greater than 0.")
+
         else:
             try:
                 response = requests.post(
                     f"{API_URL}/expenses",
-                    params={
-                        "description": description,
+                    json={
+                        "title": title,
+                        "category": category,
                         "amount": amount,
-                        "category": category
+                        "expense_date": expense_date.isoformat()
                     }
                 )
 
                 if response.status_code in [200, 201]:
-                    st.success("Expense added successfully! 🎉")
+                    st.success("✅ Expense added successfully!")
                     st.rerun()
+
                 else:
                     st.error(
-                        f"Could not add expense: {response.status_code} - "
-                        f"{response.text}"
+                        f"Failed to add expense. "
+                        f"Status: {response.status_code}"
                     )
+                    st.code(response.text)
 
             except Exception as e:
                 st.error(f"Connection error: {e}")
 
 
-# -----------------------------
-# Dashboard
-# -----------------------------
+# ============================================================
+# EXPENSE DASHBOARD
+# ============================================================
 
 st.header("📊 Expense Dashboard")
 
 try:
+
     expenses_response = requests.get(
         f"{API_URL}/expenses"
     )
@@ -99,28 +134,37 @@ try:
 
             st.subheader("📈 Spending by Category")
 
-            category_data = df.groupby(
-                "category"
-            )["amount"].sum()
+            category_data = (
+                df.groupby("category")["amount"]
+                .sum()
+            )
 
             st.bar_chart(category_data)
 
         else:
-            st.info("No expenses found. Add your first expense above!")
+
+            st.info(
+                "No expenses found. "
+                "Add your first expense above."
+            )
 
     else:
+
         st.error(
-            f"Could not get expenses: "
-            f"{expenses_response.status_code}"
+            f"Could not get expenses. "
+            f"Status: {expenses_response.status_code}"
         )
 
 except Exception as e:
-    st.error(f"Connection error: {e}")
+
+    st.error(
+        f"Connection error: {e}"
+    )
 
 
-# -----------------------------
-# AI Chat
-# -----------------------------
+# ============================================================
+# AI AGENT
+# ============================================================
 
 st.header("🤖 Smart Expense AI Agent")
 
@@ -129,7 +173,7 @@ question = st.text_input(
     placeholder="Example: How much did I spend this month?"
 )
 
-if st.button("Ask AI"):
+if st.button("🤖 Ask AI"):
 
     if question.strip():
 
@@ -137,7 +181,9 @@ if st.button("Ask AI"):
 
             response = requests.post(
                 f"{API_URL}/ai-agent",
-                params={"query": question}
+                params={
+                    "query": question
+                }
             )
 
             if response.status_code == 200:
@@ -146,18 +192,28 @@ if st.button("Ask AI"):
 
                 st.success("AI Response")
 
-                st.write(result["response"])
+                st.write(
+                    result["response"]
+                )
 
             else:
 
                 st.error(
-                    f"AI Agent Error: {response.status_code}"
+                    f"AI Agent Error: "
+                    f"{response.status_code}"
                 )
+
+                st.code(response.text)
 
         except Exception as e:
 
-            st.error(f"Connection error: {e}")
+            st.error(
+                f"Connection error: {e}"
+            )
 
     else:
 
-        st.warning("Please enter a question.")
+        st.warning(
+            "Please enter a question."
+        )
+```
