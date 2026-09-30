@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+streamlit
+mysql-connector-python
+groq
+pandas
+numpy
+scikit-learn
+python-dotenv
+requests
+pydantic
